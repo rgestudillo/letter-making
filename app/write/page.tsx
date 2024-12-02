@@ -1,20 +1,21 @@
-'use client'
+'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '@/lib/firebase'
+import { auth } from '@/lib/firebase';
 
 export default function WriteLetter() {
-  const [letter, setLetter] = useState('')
-  const [author, setAuthor] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
+  const [title, setTitle] = useState('');
+  const [letter, setLetter] = useState('');
+  const [author, setAuthor] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -24,33 +25,51 @@ export default function WriteLetter() {
   }, []);
 
   const handleSubmit = async () => {
-    if (letter.trim()) {
-      setIsLoading(true)
-      try {
-        const response = await fetch('/api/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: letter, author, createdBy: user ? user.uid : 'Guest' }),
-        });
-        const data = await response.json()
-        if (data.id) {
-          router.push(`/generate/${data.id}`)
-        } else {
-          throw new Error('Failed to generate link')
-        }
-      } catch (error) {
-        console.error('Error generating link:', error)
-        alert('Failed to generate link. Please try again.')
-      } finally {
-        setIsLoading(false)
-      }
+    if (!title.trim() || !letter.trim()) {
+      alert('Title and content are required.');
+      return;
     }
-  }
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          content: letter,
+          author,
+          createdBy: user ? user.uid : 'Guest',
+        }),
+      });
+      const data = await response.json();
+      if (data.id) {
+        router.push(`/generate/${data.id}`);
+      } else {
+        throw new Error('Failed to generate link');
+      }
+    } catch (error) {
+      console.error('Error generating link:', error);
+      alert('Failed to generate link. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400 p-4">
       <h1 className="text-3xl font-bold text-white mb-8">Write Your Letter</h1>
       <div className="w-full max-w-2xl space-y-4">
+        <div>
+          <Label htmlFor="title" className="text-white">Title</Label>
+          <Input
+            id="title"
+            placeholder="Title of your letter"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full"
+            required
+          />
+        </div>
         <div>
           <Label htmlFor="author" className="text-white">Your Name (optional)</Label>
           <Input
@@ -81,6 +100,5 @@ export default function WriteLetter() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-

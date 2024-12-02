@@ -2,9 +2,12 @@ import { NextResponse } from 'next/server';
 import { saveLetter } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
-  const { content, author, createdBy } = await request.json();
+  const { title, content, author, createdBy } = await request.json();
 
-  // Check for required fields: content and createdBy
+  // Check for required fields: title, content, and createdBy
+  if (!title) {
+    return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+  }
   if (!content) {
     return NextResponse.json({ error: 'Content is required' }, { status: 400 });
   }
@@ -13,8 +16,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    // Pass the createdBy information to the saveLetter function
-    const id = await saveLetter(content, author, createdBy);
+    // Pass all fields to the saveLetter function
+    const id = await saveLetter(title, content, author, createdBy);
     return NextResponse.json({ id });
   } catch (error) {
     console.error('Error saving letter:', error);

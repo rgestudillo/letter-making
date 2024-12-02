@@ -25,11 +25,17 @@ if (!admin.apps.length) {
 const firestore = getFirestore();
 const auth = getAuth();
 
-export async function saveLetter(content: string, author?: string, createdBy: string = 'Guest'): Promise<string> {
-  const letter = createLetter(content, author, createdBy);
+export async function saveLetter(
+  title: string,
+  content: string,
+  author?: string,
+  createdBy: string = 'Guest'
+): Promise<string> {
+  const letter = createLetter(title, content, author, createdBy);
   await firestore.collection('letters').doc(letter.id).set(letter);
   return letter.id;
 }
+
 
 export async function getLetter(id: string): Promise<Letter | null> {
   const doc = await firestore.collection('letters').doc(id).get();

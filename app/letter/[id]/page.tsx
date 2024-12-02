@@ -44,7 +44,7 @@ export default async function Letter({ params }: { params?: { id: string } }) {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400 p-4">
       <Card className="w-full max-w-2xl shadow-xl">
         <CardHeader className="bg-purple-100 rounded-t-lg">
-          <CardTitle className="text-3xl font-bold text-purple-600">Your Letter</CardTitle>
+          <CardTitle className="text-3xl font-bold text-purple-600">{letter.title}</CardTitle>
         </CardHeader>
         <CardContent className="p-6">
           <ScrollArea className="h-[60vh] pr-4">
