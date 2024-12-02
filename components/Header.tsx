@@ -36,7 +36,7 @@ export function Header() {
                 throw new Error('Failed to add/verify user in Firestore');
             }
 
-            router.push('/home');
+            router.push('/');
         } catch (error) {
             console.error('Error signing in or verifying user:', error);
         }
