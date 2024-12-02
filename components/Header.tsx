@@ -8,15 +8,12 @@ import { auth, googleProvider } from '@/lib/firebase';
 import { Button } from '@/components/ui/button';
 
 export function Header() {
-    const [user, setUser] = useState<User | null>(null)
+    const [user, setUser] = useState<User | null>(null);
     const router = useRouter();
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             setUser(user);
-            if (user) {
-                router.push('/home');
-            }
         });
         return () => unsubscribe();
     }, [router]);
@@ -60,7 +57,12 @@ export function Header() {
                 <Link href="/" className="text-2xl font-bold">
                     Letter Writing
                 </Link>
-                <nav>
+                <nav className="flex items-center space-x-4">
+                    {user && (
+                        <Link href="/home" className="text-white hover:underline">
+                            Dashboard
+                        </Link>
+                    )}
                     {user ? (
                         <Button onClick={handleSignOut} className="bg-white text-purple-600 hover:bg-purple-100">
                             Sign Out
