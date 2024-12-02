@@ -4,8 +4,8 @@ import { saveLetter } from '@/lib/firebase-admin';
 export async function POST(request: Request) {
   const { content, author } = await request.json();
 
-  if (!content || !author) {
-    return NextResponse.json({ error: 'Content and Author are required' }, { status: 400 });
+  if (!content) {
+    return NextResponse.json({ error: 'Content is required' }, { status: 400 });
   }
 
   try {
@@ -16,3 +16,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Failed to save letter' }, { status: 500 });
   }
 }
+

@@ -3,6 +3,7 @@ import { Typewriter } from '@/components/Typewriter'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { getLetter } from '@/lib/firebase-admin'
 
 export default async function Letter({ params }: { params?: { id: string } }) {
   if (!params || !params.id) {
@@ -20,12 +21,9 @@ export default async function Letter({ params }: { params?: { id: string } }) {
     );
   }
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_BASE_URL}/api/letter/${params.id}`
-  );
-  const data = await response.json();
+  const letter = await getLetter(params.id);
 
-  if (!data.content) {
+  if (!letter) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
         <Card className="w-full max-w-md">
@@ -40,9 +38,7 @@ export default async function Letter({ params }: { params?: { id: string } }) {
     );
   }
 
-  const formattedDate = data.timestamp
-    ? format(new Date(data.timestamp), 'MMMM d, yyyy HH:mm')
-    : 'Unknown Date';
+  const formattedDate = format(new Date(letter.timestamp), 'MMMM d, yyyy HH:mm');
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400 p-4">
@@ -54,23 +50,21 @@ export default async function Letter({ params }: { params?: { id: string } }) {
           <ScrollArea className="h-[60vh] pr-4">
             <div className="space-y-4">
               <div className="bg-yellow-50 p-6 rounded-lg shadow-inner">
-                <Typewriter text={data.content} delay={80} />
+                <Typewriter text={letter.content} delay={30} />
+              </div>
+              <Separator className="my-4" />
+              <div className="flex flex-col space-y-2 text-sm text-gray-600">
+                {letter.author && (
+                  <p>
+                    <span className="font-semibold">From:</span> {letter.author}
+                  </p>
+                )}
+                <p>
+                  <span className="font-semibold">Written on:</span> {formattedDate}
+                </p>
               </div>
             </div>
           </ScrollArea>
-          <Separator className="my-4" />
-          <div className="flex flex-col space-y-2 text-sm text-gray-600">
-            {data.author && (
-              <p>
-                <span className="font-semibold">From:</span> {data.author}
-              </p>
-            )}
-            {data.timestamp && (
-              <p>
-                <span className="font-semibold">Written on:</span> {formattedDate}
-              </p>
-            )}
-          </div>
         </CardContent>
       </Card>
     </div>
