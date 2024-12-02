@@ -1,17 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth } from '@/lib/firebase'
 
 export default function WriteLetter() {
   const [letter, setLetter] = useState('')
   const [author, setAuthor] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [user, setUser] = useState<User | null>(null);
   const router = useRouter()
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+    });
+    return () => unsubscribe();
+  }, []);
 
   const handleSubmit = async () => {
     if (letter.trim()) {
@@ -20,8 +30,8 @@ export default function WriteLetter() {
         const response = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: letter, author }),
-        })
+          body: JSON.stringify({ content: letter, author, createdBy: user ? user.uid : 'Guest' }),
+        });
         const data = await response.json()
         if (data.id) {
           router.push(`/generate/${data.id}`)
