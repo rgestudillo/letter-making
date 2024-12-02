@@ -52,19 +52,19 @@ export default async function Letter({ params }: { params?: { id: string } }) {
               <div className="bg-yellow-50 p-6 rounded-lg shadow-inner">
                 <Typewriter text={letter.content} delay={30} />
               </div>
-              <Separator className="my-4" />
-              <div className="flex flex-col space-y-2 text-sm text-gray-600">
-                {letter.author && (
-                  <p>
-                    <span className="font-semibold">From:</span> {letter.author}
-                  </p>
-                )}
-                <p>
-                  <span className="font-semibold">Written on:</span> {formattedDate}
-                </p>
-              </div>
             </div>
           </ScrollArea>
+          <Separator className="my-4" />
+          <div className="flex flex-col space-y-2 text-sm text-gray-600">
+            {letter.author && (
+              <p>
+                <span className="font-semibold">From:</span> {letter.author}
+              </p>
+            )}
+            <p>
+              <span className="font-semibold">Written on:</span> {formattedDate}
+            </p>
+          </div>
         </CardContent>
       </Card>
     </div>
