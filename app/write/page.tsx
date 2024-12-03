@@ -13,6 +13,7 @@ export default function WriteLetter() {
   const [title, setTitle] = useState('');
   const [letter, setLetter] = useState('');
   const [author, setAuthor] = useState('');
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState<User | null>(null);
   const router = useRouter();
@@ -25,8 +26,8 @@ export default function WriteLetter() {
   }, []);
 
   const handleSubmit = async () => {
-    if (!title.trim() || !letter.trim()) {
-      alert('Title and content are required.');
+    if (!title.trim() || !letter.trim() || !recipientEmail.trim()) {
+      alert('Title, content, and recipient email are required.');
       return;
     }
     setIsLoading(true);
@@ -39,6 +40,7 @@ export default function WriteLetter() {
           content: letter,
           author,
           createdBy: user ? user.uid : 'Guest',
+          recipient_email: recipientEmail,
         }),
       });
       const data = await response.json();
@@ -81,6 +83,18 @@ export default function WriteLetter() {
           />
         </div>
         <div>
+          <Label htmlFor="recipientEmail" className="text-white">Recipient's Email</Label>
+          <Input
+            id="recipientEmail"
+            type="email"
+            placeholder="Recipient's email address"
+            value={recipientEmail}
+            onChange={(e) => setRecipientEmail(e.target.value)}
+            className="w-full"
+            required
+          />
+        </div>
+        <div>
           <Label htmlFor="letter" className="text-white">Your Letter</Label>
           <Textarea
             id="letter"
@@ -88,6 +102,7 @@ export default function WriteLetter() {
             placeholder="Write your letter here..."
             value={letter}
             onChange={(e) => setLetter(e.target.value)}
+            required
           />
         </div>
         <Button
@@ -102,3 +117,4 @@ export default function WriteLetter() {
     </div>
   );
 }
+

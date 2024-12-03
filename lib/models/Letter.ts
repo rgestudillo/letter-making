@@ -5,15 +5,18 @@ export interface Letter {
     author?: string;
     timestamp: number;
     createdBy: string;
+    recipient_email: string;
 }
 
-export function createLetter(title: string, content: string, author?: string, createdBy: string = 'Guest'): Letter {
+export function createLetter(title: string, content: string, recipient_email: string, author?: string, createdBy: string = 'Guest'): Letter {
     return {
         id: Date.now().toString(),
         title,
         content,
         author,
         timestamp: Date.now(),
-        createdBy
+        createdBy,
+        recipient_email
     };
 }
+

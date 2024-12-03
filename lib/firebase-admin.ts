@@ -28,13 +28,15 @@ const auth = getAuth();
 export async function saveLetter(
   title: string,
   content: string,
+  recipient_email: string,
   author?: string,
   createdBy: string = 'Guest'
 ): Promise<string> {
-  const letter = createLetter(title, content, author, createdBy);
+  const letter = createLetter(title, content, recipient_email, author, createdBy);
   await firestore.collection('letters').doc(letter.id).set(letter);
   return letter.id;
 }
+
 
 
 export async function getLetter(id: string): Promise<Letter | null> {
@@ -51,13 +53,38 @@ export async function addUser(userId: string, userEmail: string): Promise<void> 
   const userRef = firestore.collection('users').doc(userId);
   const doc = await userRef.get();
   if (!doc.exists) {
-    const newUser: User = createUser(userId, userEmail);  // Use the createUser function to structure the user data
+    const newUser: User = createUser(userId, userEmail);
     await userRef.set({
       ...newUser,
-      dateCreated: admin.firestore.FieldValue.serverTimestamp()  // Replace JavaScript Date with Firestore serverTimestamp for consistency
+      dateCreated: admin.firestore.FieldValue.serverTimestamp()
     });
   }
 }
+
+export async function getLettersByUser(userId: string): Promise<Letter[]> {
+  const snapshot = await firestore.collection('letters')
+    .where('createdBy', '==', userId)
+    .orderBy('timestamp', 'desc')
+    .get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Letter));
+}
+
+export async function getLettersByEmail(userEmail: string): Promise<Letter[]> {
+  const snapshot = await firestore.collection('letters')
+    .where('recipient_email', '==', userEmail)
+    .orderBy('timestamp', 'desc')
+    .get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Letter));
+}
+
 
 export { firestore, auth };
 
