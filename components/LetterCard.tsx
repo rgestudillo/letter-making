@@ -29,7 +29,7 @@ export function LetterCard({ letter }: LetterCardProps) {
                     </CardContent>
                 </Card>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>{letter.title}</DialogTitle>
                 </DialogHeader>
@@ -43,4 +43,3 @@ export function LetterCard({ letter }: LetterCardProps) {
         </Dialog>
     )
 }
-
