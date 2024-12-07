@@ -32,8 +32,8 @@ export default function WriteLetter() {
   }, [router])
 
   const handleSubmit = async () => {
-    if (!title.trim() || !letter.trim() || !recipientEmail.trim()) {
-      alert('Title, content, and recipient email are required.')
+    if (!title.trim() || !letter.trim()) {
+      alert('Title and content are required.')
       return
     }
     setIsLoading(true)
@@ -46,7 +46,7 @@ export default function WriteLetter() {
           content: letter,
           author,
           createdBy: user ? user.uid : 'Guest',
-          recipient_email: recipientEmail,
+          recipient_email: recipientEmail.trim(),
         }),
       })
       const data = await response.json()
@@ -95,7 +95,7 @@ export default function WriteLetter() {
           </div>
 
           <div>
-            <Label htmlFor="recipientEmail" className="text-emerald-700 font-medium">Recipient's Email</Label>
+            <Label htmlFor="recipientEmail" className="text-emerald-700 font-medium">Recipient's Email (optional)</Label>
             <Input
               id="recipientEmail"
               type="email"
@@ -103,7 +103,6 @@ export default function WriteLetter() {
               value={recipientEmail}
               onChange={(e) => setRecipientEmail(e.target.value)}
               className="w-full border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
-              required
             />
           </div>
 

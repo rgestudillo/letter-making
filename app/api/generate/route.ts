@@ -4,7 +4,7 @@ import { saveLetter } from '@/lib/firebase-admin';
 export async function POST(request: Request) {
   const { title, content, author, createdBy, recipient_email } = await request.json();
 
-  // Check for required fields: title, content, createdBy, and recipient_email
+  // Check for required fields: title, content, and createdBy
   if (!title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   }
@@ -13,9 +13,6 @@ export async function POST(request: Request) {
   }
   if (!createdBy) {
     return NextResponse.json({ error: 'Creator information is required' }, { status: 400 });
-  }
-  if (!recipient_email) {
-    return NextResponse.json({ error: 'Recipient email is required' }, { status: 400 });
   }
 
   try {

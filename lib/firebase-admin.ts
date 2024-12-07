@@ -28,7 +28,7 @@ const auth = getAuth();
 export async function saveLetter(
   title: string,
   content: string,
-  recipient_email: string,
+  recipient_email?: string,
   author?: string,
   createdBy: string = 'Guest'
 ): Promise<string> {
