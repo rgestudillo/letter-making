@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
 import { Input } from '@/components/ui/input'
@@ -18,8 +18,6 @@ export default function WriteLetter() {
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
-  const searchParams = useSearchParams()
-
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -30,17 +28,8 @@ export default function WriteLetter() {
       }
     })
 
-    // Check for query parameters
-    const replyTo = searchParams.get('replyTo')
-    const subject = searchParams.get('subject')
-    const recipientEmailParam = searchParams.get('recipientEmail')
-
-    if (replyTo) setAuthor(replyTo)
-    if (subject) setTitle(subject)
-    if (recipientEmailParam) setRecipientEmail(recipientEmailParam)
-
     return () => unsubscribe()
-  }, [router, searchParams])
+  }, [router])
 
   const handleSubmit = async () => {
     if (!title.trim() || !letter.trim() || !recipientEmail.trim()) {

@@ -49,23 +49,11 @@ export default async function Letter({ params }: { params?: { id: string } }) {
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-100 to-teal-200 p-4">
       <Card className="w-full max-w-3xl shadow-2xl border-2 border-emerald-100 transform hover:scale-[1.02] transition-all duration-500">
         <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 border-b-2 border-emerald-100">
-          <div className="flex items-center gap-3 mb-2">
+          <div className="flex items-center gap-3">
             <div className="bg-emerald-500 p-2 rounded-full shadow-lg">
               <FaEnvelope className="w-5 h-5 text-white" />
             </div>
             <CardTitle className="text-3xl font-bold text-emerald-800">{letter.title}</CardTitle>
-          </div>
-          <div className="flex items-center gap-6 text-sm text-emerald-600 mt-2">
-            {letter.author && (
-              <div className="flex items-center gap-1">
-                <FaUser className="w-4 h-4" />
-                <span>{letter.author}</span>
-              </div>
-            )}
-            <div className="flex items-center gap-1">
-              <FaCalendarAlt className="w-4 h-4" />
-              <span>{formattedDate}</span>
-            </div>
           </div>
         </CardHeader>
 
