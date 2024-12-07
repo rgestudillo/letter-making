@@ -1,45 +1,52 @@
 'use client'
 
-import { useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { format } from 'date-fns'
 import { Letter } from '@/lib/models/Letter'
+import Link from 'next/link'
+import { FaEnvelope } from 'react-icons/fa'
 
 interface LetterCardProps {
     letter: Letter
 }
 
 export function LetterCard({ letter }: LetterCardProps) {
-    const [isOpen, setIsOpen] = useState(false)
-
     const formattedDate = format(new Date(letter.timestamp), 'MMMM d, yyyy HH:mm')
 
     return (
-        <Dialog open={isOpen} onOpenChange={setIsOpen}>
-            <DialogTrigger asChild>
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-                    <CardHeader>
-                        <CardTitle>{letter.title}</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-sm text-gray-500">{formattedDate}</p>
-                        <p className="mt-2 line-clamp-2">{letter.content}</p>
-                    </CardContent>
-                </Card>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] max-h-[80vh] overflow-y-auto">
-                <DialogHeader>
-                    <DialogTitle>{letter.title}</DialogTitle>
-                </DialogHeader>
-                <div className="mt-4">
-                    <p className="text-sm text-gray-500 mb-2">
-                        {letter.author ? `By ${letter.author} • ` : ''}{formattedDate}
-                    </p>
-                    <p className="whitespace-pre-wrap">{letter.content}</p>
-                </div>
-            </DialogContent>
-        </Dialog>
+        <Link href={`/letter/${letter.id}`}>
+            <Card className="cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-100">
+                <CardHeader className="relative pb-2">
+                    <div className="absolute -right-2 -top-2 bg-emerald-500 p-2 rounded-full shadow-lg">
+                        <FaEnvelope className="text-white w-4 h-4" />
+                    </div>
+                    <CardTitle className="text-xl font-semibold text-emerald-800 line-clamp-1">
+                        {letter.title}
+                    </CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="space-y-2">
+                        {letter.author && (
+                            <p className="text-sm font-medium text-emerald-600">
+                                From: {letter.author}
+                            </p>
+                        )}
+                        <p className="text-xs text-gray-500">
+                            {formattedDate}
+                        </p>
+                        {letter.content && (
+                            <p className="text-sm text-gray-600 line-clamp-2 mt-2">
+                                {letter.content}
+                            </p>
+                        )}
+                        <div className="pt-2">
+                            <span className="text-xs font-medium text-emerald-500 hover:text-emerald-700">
+                                Read more →
+                            </span>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+        </Link>
     )
 }

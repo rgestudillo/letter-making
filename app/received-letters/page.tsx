@@ -52,15 +52,26 @@ export default function ReceivedLetters() {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
-                <p className="text-white text-2xl">Loading...</p>
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-100 to-teal-200">
+                <div className="bg-white/80 backdrop-blur-sm px-8 py-4 rounded-xl shadow-xl border-2 border-emerald-100">
+                    <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                        <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                        <div className="w-2 h-2 bg-emerald-600 rounded-full animate-bounce"></div>
+                        <span className="text-emerald-800 text-xl font-medium ml-2">Loading</span>
+                    </div>
+                </div>
+
+                {/* Decorative elements */}
+                <div className="absolute top-0 left-0 w-64 h-64 bg-gradient-to-br from-emerald-200/20 to-transparent rounded-full blur-3xl -z-10" />
+                <div className="absolute bottom-0 right-0 w-64 h-64 bg-gradient-to-tl from-teal-200/20 to-transparent rounded-full blur-3xl -z-10" />
             </div>
         )
     }
 
     if (error) {
         return (
-            <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-400">
+            <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-emerald-50 via-green-100 to-teal-200">
                 <p className="text-white text-2xl">{error}</p>
             </div>
         )
