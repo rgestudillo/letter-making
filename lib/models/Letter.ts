@@ -6,9 +6,17 @@ export interface Letter {
     timestamp: number;
     createdBy: string;
     recipient_email?: string;
+    image?: string;
 }
 
-export function createLetter(title: string, content: string, recipient_email?: string, author?: string, createdBy: string = 'Guest'): Letter {
+export function createLetter(
+    title: string,
+    content: string,
+    recipient_email?: string,
+    author?: string,
+    createdBy: string = 'Guest',
+    image?: string
+): Letter {
     return {
         id: Date.now().toString(),
         title,
@@ -16,7 +24,8 @@ export function createLetter(title: string, content: string, recipient_email?: s
         author,
         timestamp: Date.now(),
         createdBy,
-        recipient_email
+        recipient_email,
+        image
     };
 }
 

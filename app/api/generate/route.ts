@@ -1,23 +1,30 @@
 import { NextResponse } from 'next/server';
 import { saveLetter } from '@/lib/firebase-admin';
+import { Letter } from '@/lib/models/Letter';
 
 export async function POST(request: Request) {
-  const { title, content, author, createdBy, recipient_email } = await request.json();
+  const letterData: Partial<Letter> = await request.json();
 
-  // Check for required fields: title, content, and createdBy
-  if (!title) {
+  // Check for required fields
+  if (!letterData.title) {
     return NextResponse.json({ error: 'Title is required' }, { status: 400 });
   }
-  if (!content) {
+  if (!letterData.content) {
     return NextResponse.json({ error: 'Content is required' }, { status: 400 });
   }
-  if (!createdBy) {
+  if (!letterData.createdBy) {
     return NextResponse.json({ error: 'Creator information is required' }, { status: 400 });
   }
 
   try {
-    // Pass all fields to the saveLetter function
-    const id = await saveLetter(title, content, recipient_email, author, createdBy);
+    const id = await saveLetter(
+      letterData.title,
+      letterData.content,
+      letterData.recipient_email,
+      letterData.author,
+      letterData.createdBy,
+      letterData.image
+    );
     return NextResponse.json({ id });
   } catch (error) {
     console.error('Error saving letter:', error);

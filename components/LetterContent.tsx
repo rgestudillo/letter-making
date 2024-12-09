@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 'use client';
 
 import { useState } from 'react';
@@ -6,15 +7,70 @@ import { Envelope } from './Envelope';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FaEnvelope, FaCalendarAlt, FaUser, FaQuoteLeft } from 'react-icons/fa';
+import { FaEnvelope, FaCalendarAlt, FaUser, FaQuoteLeft, FaImage, FaTimes } from 'react-icons/fa';
 import { Typewriter } from './Typewriter';
 import { Letter } from '@/lib/models/Letter';
+import Image from 'next/image';
 
 export function LetterContent({ letter, formattedDate }: { letter: Letter, formattedDate: string }) {
     const [isOpen, setIsOpen] = useState(false);
+    const [showImageModal, setShowImageModal] = useState(false);
+    const [isTypingComplete, setIsTypingComplete] = useState(false);
+
+    const handleTypingComplete = () => {
+        setIsTypingComplete(true);
+        if (letter.image) {
+            setShowImageModal(true);
+        }
+    };
+
+    const ImageModal = () => (
+        <AnimatePresence>
+            {showImageModal && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ delay: 1, duration: 0.5 }}
+                    className="fixed inset-0 bg-black/70 z-50 flex items-center justify-center p-4"
+                    onClick={() => setShowImageModal(false)}
+                >
+                    <motion.div
+                        initial={{ scale: 0.9, y: 20, opacity: 0 }}
+                        animate={{ scale: 1, y: 0, opacity: 1 }}
+                        exit={{ scale: 0.9, y: 20, opacity: 0 }}
+                        transition={{
+                            delay: 1.2,
+                            duration: 0.5,
+                            type: "spring",
+                            bounce: 0.3
+                        }}
+                        className="relative max-w-4xl max-h-[90vh] bg-white rounded-lg p-2"
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setShowImageModal(false)}
+                            className="absolute -top-4 -right-4 bg-emerald-500 text-white p-2 rounded-full hover:bg-emerald-600 transition-colors"
+                        >
+                            <FaTimes />
+                        </button>
+                        {letter.image && (
+                            <img
+                                src={letter.image}
+                                alt="Letter attachment"
+                                className="max-h-[85vh] object-contain rounded-lg"
+                            />
+                        )}
+                    </motion.div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+    );
 
     return (
-        <AnimatePresence mode="wait">
+        <>
+            <ImageModal />
+
             {!isOpen ? (
                 <Envelope key="envelope" onOpen={() => setIsOpen(true)} title={letter.title} />
             ) : (
@@ -35,6 +91,29 @@ export function LetterContent({ letter, formattedDate }: { letter: Letter, forma
                         </CardHeader>
 
                         <CardContent className="p-8 bg-white">
+                            <AnimatePresence>
+                                {isTypingComplete && letter.image && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 20 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        transition={{ duration: 0.5 }}
+                                        className="relative w-full aspect-video cursor-pointer overflow-hidden rounded-xl shadow-lg mb-4"
+                                        onClick={() => setShowImageModal(true)}
+                                    >
+                                        <Image
+                                            src={letter.image}
+                                            alt="Letter attachment"
+                                            layout="fill"
+                                            objectFit="cover"
+                                            className="hover:scale-105 transition-transform duration-300"
+                                        />
+                                        <div className="absolute inset-0 bg-black/30 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                                            <FaImage className="w-8 h-8 text-white" />
+                                        </div>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+
                             <ScrollArea className="h-[60vh] pr-4">
                                 <div className="space-y-4">
                                     <div className="relative bg-gradient-to-br from-emerald-50 to-green-50 p-8 rounded-xl shadow-inner border border-emerald-100">
@@ -44,6 +123,7 @@ export function LetterContent({ letter, formattedDate }: { letter: Letter, forma
                                                 text={letter.content}
                                                 delay={30}
                                                 className="text-emerald-800 leading-relaxed text-lg font-serif"
+                                                onComplete={handleTypingComplete}
                                             />
                                         </div>
                                     </div>
@@ -70,6 +150,6 @@ export function LetterContent({ letter, formattedDate }: { letter: Letter, forma
                     </Card>
                 </motion.div>
             )}
-        </AnimatePresence>
+        </>
     );
 }

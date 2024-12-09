@@ -6,9 +6,10 @@ interface TypewriterProps {
     text: string;
     delay?: number;
     className?: string;
+    onComplete?: () => void;
 }
 
-export function Typewriter({ text, delay = 50, className = '' }: TypewriterProps) {
+export function Typewriter({ text, delay = 50, className = '', onComplete }: TypewriterProps) {
     const [currentText, setCurrentText] = useState<string[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isTypingComplete, setIsTypingComplete] = useState(false);
@@ -22,10 +23,13 @@ export function Typewriter({ text, delay = 50, className = '' }: TypewriterProps
             }, delay);
 
             return () => clearTimeout(timeout);
-        } else {
+        } else if (!isTypingComplete) {
             setIsTypingComplete(true);
+            if (onComplete) {
+                onComplete();
+            }
         }
-    }, [currentIndex, delay, text]);
+    }, [currentIndex, delay, text, isTypingComplete, onComplete]);
 
     return (
         <span className={className}>

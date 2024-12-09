@@ -9,20 +9,30 @@ import { Label } from '@/components/ui/label'
 import { onAuthStateChanged, User } from 'firebase/auth'
 import { auth } from '@/lib/firebase'
 import { FaPaperPlane } from 'react-icons/fa';
+import { Letter } from '@/lib/models/Letter';
 
 export default function WriteLetter() {
-  const [title, setTitle] = useState('')
-  const [letter, setLetter] = useState('')
-  const [author, setAuthor] = useState('')
-  const [recipientEmail, setRecipientEmail] = useState('')
+  const [letter, setLetter] = useState<Partial<Letter>>({
+    title: '',
+    content: '',
+    author: '',
+    recipient_email: '',
+    createdBy: 'Guest',
+    image: '',
+  })
   const [isLoading, setIsLoading] = useState(false)
   const [user, setUser] = useState<User | null>(null)
   const router = useRouter()
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user)
-        setAuthor(user.displayName || '')
+        setLetter((prevLetter) => ({
+          ...prevLetter,
+          author: user.displayName || '',
+          createdBy: user.uid,
+        }))
       } else {
         router.push('/login')
       }
@@ -31,8 +41,19 @@ export default function WriteLetter() {
     return () => unsubscribe()
   }, [router])
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setLetter({ ...letter, image: reader.result as string })
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
   const handleSubmit = async () => {
-    if (!title.trim() || !letter.trim()) {
+    if (!letter.title?.trim() || !letter.content?.trim()) {
       alert('Title and content are required.')
       return
     }
@@ -41,13 +62,7 @@ export default function WriteLetter() {
       const response = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          content: letter,
-          author,
-          createdBy: user ? user.uid : 'Guest',
-          recipient_email: recipientEmail.trim(),
-        }),
+        body: JSON.stringify(letter),
       })
       const data = await response.json()
       if (data.id) {
@@ -76,8 +91,8 @@ export default function WriteLetter() {
             <Input
               id="title"
               placeholder="Title of your letter"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              value={letter.title}
+              onChange={(e) => setLetter({ ...letter, title: e.target.value })}
               className="w-full border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
               required
             />
@@ -88,8 +103,8 @@ export default function WriteLetter() {
             <Input
               id="author"
               placeholder="Your name"
-              value={author}
-              onChange={(e) => setAuthor(e.target.value)}
+              value={letter.author}
+              onChange={(e) => setLetter({ ...letter, author: e.target.value })}
               className="w-full border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
             />
           </div>
@@ -100,8 +115,8 @@ export default function WriteLetter() {
               id="recipientEmail"
               type="email"
               placeholder="Recipient's email address"
-              value={recipientEmail}
-              onChange={(e) => setRecipientEmail(e.target.value)}
+              value={letter.recipient_email}
+              onChange={(e) => setLetter({ ...letter, recipient_email: e.target.value })}
               className="w-full border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
             />
           </div>
@@ -112,9 +127,20 @@ export default function WriteLetter() {
               id="letter"
               className="w-full h-64 p-4 rounded-lg border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400 resize-none"
               placeholder="Write your letter here..."
-              value={letter}
-              onChange={(e) => setLetter(e.target.value)}
+              value={letter.content}
+              onChange={(e) => setLetter({ ...letter, content: e.target.value })}
               required
+            />
+          </div>
+
+          <div>
+            <Label htmlFor="image" className="text-emerald-700 font-medium">Attach Image (optional)</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
             />
           </div>
 

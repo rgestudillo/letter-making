@@ -30,9 +30,10 @@ export async function saveLetter(
   content: string,
   recipient_email?: string,
   author?: string,
-  createdBy: string = 'Guest'
+  createdBy: string = 'Guest',
+  image?: string
 ): Promise<string> {
-  const letter = createLetter(title, content, recipient_email, author, createdBy);
+  const letter = createLetter(title, content, recipient_email, author, createdBy, image);
   await firestore.collection('letters').doc(letter.id).set(letter);
   return letter.id;
 }
