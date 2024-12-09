@@ -33,8 +33,6 @@ export default function WriteLetter() {
           author: user.displayName || '',
           createdBy: user.uid,
         }))
-      } else {
-        router.push('/login')
       }
     })
 
