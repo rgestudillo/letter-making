@@ -7,6 +7,7 @@ export interface Letter {
     createdBy: string;
     recipient_email?: string;
     image?: string;
+    parentId?: string;
 }
 
 export function createLetter(
@@ -15,7 +16,8 @@ export function createLetter(
     recipient_email?: string,
     author?: string,
     createdBy: string = 'Guest',
-    image?: string
+    image?: string,
+    parentId?: string
 ): Letter {
     return {
         id: Date.now().toString(),
@@ -25,7 +27,8 @@ export function createLetter(
         timestamp: Date.now(),
         createdBy,
         recipient_email,
-        image
+        image,
+        parentId
     };
 }
 

@@ -31,14 +31,31 @@ export async function saveLetter(
   recipient_email?: string,
   author?: string,
   createdBy: string = 'Guest',
-  image?: string
+  image?: string,
+  parentId?: string
 ): Promise<string> {
-  const letter = createLetter(title, content, recipient_email, author, createdBy, image);
-  await firestore.collection('letters').doc(letter.id).set(letter);
-  return letter.id;
+  // Create letter object with required fields
+  const letterData: Record<string, string | number> = {
+    id: Date.now().toString(),
+    title,
+    content,
+    timestamp: Date.now(),
+    createdBy,
+  };
+
+  // Add optional fields only if they have values
+  if (recipient_email) letterData.recipient_email = recipient_email;
+  if (author) letterData.author = author;
+  if (image) letterData.image = image;
+  if (parentId) letterData.parentId = parentId;
+
+  // Ensure id is defined
+  const id = letterData.id as string;
+
+  // Save to Firestore
+  await firestore.collection('letters').doc(id).set(letterData);
+  return id;
 }
-
-
 
 export async function getLetter(id: string): Promise<Letter | null> {
   const doc = await firestore.collection('letters').doc(id).get();
@@ -86,6 +103,22 @@ export async function getLettersByEmail(userEmail: string): Promise<Letter[]> {
   } as Letter));
 }
 
+// Function to get replies to a letter
+export async function getLetterReplies(letterId: string): Promise<Letter[]> {
+  if (!letterId) {
+    return [];
+  }
+
+  const snapshot = await firestore.collection('letters')
+    .where('parentId', '==', letterId)
+    .orderBy('timestamp', 'asc')
+    .get();
+
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  } as Letter));
+}
 
 export { firestore, auth };
 

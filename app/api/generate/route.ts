@@ -17,13 +17,23 @@ export async function POST(request: Request) {
   }
 
   try {
+    // Extract all fields with proper type handling
+    const title = letterData.title;
+    const content = letterData.content;
+    const recipient_email = letterData.recipient_email || undefined;
+    const author = letterData.author || undefined;
+    const createdBy = letterData.createdBy;
+    const image = letterData.image || undefined;
+    const parentId = letterData.parentId || undefined;
+
     const id = await saveLetter(
-      letterData.title,
-      letterData.content,
-      letterData.recipient_email,
-      letterData.author,
-      letterData.createdBy,
-      letterData.image
+      title,
+      content,
+      recipient_email,
+      author,
+      createdBy,
+      image,
+      parentId
     );
     return NextResponse.json({ id });
   } catch (error) {

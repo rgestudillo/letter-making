@@ -1,26 +1,111 @@
 /* eslint-disable @next/next/no-img-element */
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Envelope } from './Envelope';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FaEnvelope, FaCalendarAlt, FaUser, FaQuoteLeft, FaImage, FaTimes } from 'react-icons/fa';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { FaEnvelope, FaCalendarAlt, FaUser, FaQuoteLeft, FaImage, FaTimes, FaReply } from 'react-icons/fa';
 import { Typewriter } from './Typewriter';
 import { Letter } from '@/lib/models/Letter';
 import Image from 'next/image';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, User } from 'firebase/auth';
+import { useRouter } from 'next/navigation';
 
 export function LetterContent({ letter, formattedDate }: { letter: Letter, formattedDate: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
     const [isTypingComplete, setIsTypingComplete] = useState(false);
+    const [showReplyForm, setShowReplyForm] = useState(false);
+    const [replyContent, setReplyContent] = useState('');
+    const [replyTitle, setReplyTitle] = useState(`Re: ${letter.title}`);
+    const [user, setUser] = useState<User | null>(null);
+    const [replies, setReplies] = useState<Letter[]>([]);
+    const [isLoadingReplies, setIsLoadingReplies] = useState(false);
+    const [isSubmittingReply, setIsSubmittingReply] = useState(false);
+    const router = useRouter();
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            setUser(user);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    useEffect(() => {
+        if (isOpen && letter.id) {
+            fetchReplies();
+        }
+    }, [isOpen, letter.id]);
+
+    const fetchReplies = async () => {
+        if (!letter.id) return;
+
+        setIsLoadingReplies(true);
+        try {
+            const response = await fetch(`/api/replies?letterId=${letter.id}`);
+            const data = await response.json();
+            if (data.replies) {
+                setReplies(data.replies);
+            }
+        } catch (error) {
+            console.error('Error fetching replies:', error);
+        } finally {
+            setIsLoadingReplies(false);
+        }
+    };
 
     const handleTypingComplete = () => {
         setIsTypingComplete(true);
         if (letter.image) {
             setShowImageModal(true);
+        }
+    };
+
+    const handleReplySubmit = async () => {
+        if (!replyContent.trim()) {
+            alert('Reply content is required.');
+            return;
+        }
+
+        setIsSubmittingReply(true);
+        try {
+            const replyData = {
+                title: replyTitle,
+                content: replyContent,
+                author: user?.displayName || undefined,
+                createdBy: user?.uid || 'Guest',
+                recipient_email: letter.author ? undefined : letter.recipient_email,
+                parentId: letter.id
+            };
+
+            const response = await fetch('/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(replyData),
+            });
+
+            const data = await response.json();
+            if (data.id) {
+                setShowReplyForm(false);
+                setReplyContent('');
+                fetchReplies();
+            } else {
+                throw new Error('Failed to submit reply');
+            }
+        } catch (error) {
+            console.error('Error submitting reply:', error);
+            alert('Failed to submit reply. Please try again.');
+        } finally {
+            setIsSubmittingReply(false);
         }
     };
 
@@ -79,8 +164,9 @@ export function LetterContent({ letter, formattedDate }: { letter: Letter, forma
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
+                    className="w-full max-w-3xl"
                 >
-                    <Card className="w-full max-w-3xl shadow-2xl border-2 border-emerald-100 transform hover:scale-[1.02] transition-all duration-500">
+                    <Card className="w-full shadow-2xl border-2 border-emerald-100 transform hover:scale-[1.02] transition-all duration-500">
                         <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 border-b-2 border-emerald-100">
                             <div className="flex items-center gap-3">
                                 <div className="bg-emerald-500 p-2 rounded-full shadow-lg">
@@ -147,7 +233,110 @@ export function LetterContent({ letter, formattedDate }: { letter: Letter, forma
                                 </div>
                             </div>
                         </CardContent>
+
+                        <CardFooter className="bg-gradient-to-r from-emerald-50 to-green-50 p-4 border-t-2 border-emerald-100 flex justify-between items-center">
+                            <Button
+                                onClick={() => setShowReplyForm(!showReplyForm)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-2"
+                            >
+                                <FaReply />
+                                {showReplyForm ? 'Cancel Reply' : 'Reply'}
+                            </Button>
+                        </CardFooter>
                     </Card>
+
+                    {/* Reply Form */}
+                    <AnimatePresence>
+                        {showReplyForm && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="mt-4"
+                            >
+                                <Card className="border-2 border-emerald-100 shadow-lg">
+                                    <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-100">
+                                        <CardTitle className="text-xl font-bold text-emerald-800">Write Your Reply</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-6 space-y-4">
+                                        <div>
+                                            <Label htmlFor="replyTitle" className="text-emerald-700 font-medium">Title</Label>
+                                            <Input
+                                                id="replyTitle"
+                                                value={replyTitle}
+                                                onChange={(e) => setReplyTitle(e.target.value)}
+                                                className="border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                                                required
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="replyContent" className="text-emerald-700 font-medium">Your Reply</Label>
+                                            <Textarea
+                                                id="replyContent"
+                                                value={replyContent}
+                                                onChange={(e) => setReplyContent(e.target.value)}
+                                                className="min-h-[150px] border-emerald-200 focus:border-emerald-400 focus:ring-emerald-400"
+                                                placeholder="Write your reply here..."
+                                                required
+                                            />
+                                        </div>
+                                        <Button
+                                            onClick={handleReplySubmit}
+                                            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                                            disabled={isSubmittingReply}
+                                        >
+                                            {isSubmittingReply ? 'Sending...' : 'Send Reply'}
+                                        </Button>
+                                    </CardContent>
+                                </Card>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Replies Section */}
+                    {replies.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="mt-6"
+                        >
+                            <h3 className="text-xl font-bold text-emerald-800 mb-4">Replies</h3>
+                            <div className="space-y-4">
+                                {replies.map((reply) => (
+                                    <Card key={reply.id} className="border-2 border-emerald-100 shadow-md">
+                                        <CardHeader className="bg-gradient-to-r from-emerald-50 to-green-50 border-b border-emerald-100 py-3">
+                                            <CardTitle className="text-lg font-bold text-emerald-800">{reply.title}</CardTitle>
+                                        </CardHeader>
+                                        <CardContent className="p-4">
+                                            <div className="bg-gradient-to-br from-emerald-50 to-green-50 p-4 rounded-lg shadow-inner border border-emerald-100">
+                                                <p className="text-emerald-800 leading-relaxed font-serif">{reply.content}</p>
+                                            </div>
+                                            <div className="mt-3 text-sm text-emerald-700">
+                                                {reply.author && (
+                                                    <p className="flex items-center gap-1">
+                                                        <FaUser className="w-3 h-3 text-emerald-600" />
+                                                        <span className="font-semibold">From:</span> {reply.author}
+                                                    </p>
+                                                )}
+                                                <p className="flex items-center gap-1">
+                                                    <FaCalendarAlt className="w-3 h-3 text-emerald-600" />
+                                                    <span className="font-semibold">On:</span> {new Date(reply.timestamp).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {isLoadingReplies && (
+                        <div className="mt-4 text-center text-emerald-600">
+                            Loading replies...
+                        </div>
+                    )}
                 </motion.div>
             )}
         </>
